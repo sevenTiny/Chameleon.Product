@@ -14,7 +14,7 @@ const proSettings: DefaultSettings = {
   fixSiderbar: true,
   colorWeak: false,
   menu: {
-    locale: true,
+    locale: false,//国际化：true=开启，false=关闭
   },
   title: 'Ant Design Pro',
   pwa: false,

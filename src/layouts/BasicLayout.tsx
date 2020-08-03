@@ -18,6 +18,7 @@ import RightContent from '@/components/GlobalHeader/RightContent';
 import { ConnectState } from '@/models/connect';
 import { getAuthorityFromRouter } from '@/utils/utils';
 import logo from '../assets/logo.svg';
+import menu from '@/models/menu';
 
 const noMatch = (
   <Result
@@ -50,14 +51,51 @@ export type BasicLayoutContext = { [K in 'location']: BasicLayoutProps[K] } & {
  * use Authorized check all menu item
  */
 
-const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] =>
-  menuList.map((item) => {
-    const localItem = {
-      ...item,
-      children: item.children ? menuDataRender(item.children) : undefined,
-    };
-    return Authorized.check(item.authority, localItem, null) as MenuDataItem;
-  });
+// const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] =>
+//   menuList.map((item) => {
+//     const localItem = {
+//       ...item,
+//       children: item.children ? menuDataRender(item.children) : undefined,
+//     };
+//     return Authorized.check(item.authority, localItem, null) as MenuDataItem;
+//   });
+
+const menuDataRender = (): MenuDataItem[] => {
+
+  const menudata = menu.state.menuData;
+
+  console.log(menudata)
+
+  return menudata;
+
+  var re = [
+    {
+      name: '组织人事',
+      path: '/welcome',
+      children: [
+        {
+          name: '员工信息',
+          path: '/'
+        },
+        {
+          name: '任职记录',
+          path: '/'
+        }
+      ]
+    },
+    {
+      name: '薪酬管理',
+      path: '/',
+      children: [
+        {
+          name: '薪资档案',
+          path: '/'
+        }
+      ]
+    }
+  ]
+  return re;
+};
 
 const defaultFooterDom = (
   <DefaultFooter
@@ -103,6 +141,9 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
       dispatch({
         type: 'user/fetchCurrent',
       });
+      dispatch({
+        type: 'menu/getMenuData',
+      });
     }
   }, []);
   /**
@@ -147,11 +188,11 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         return first ? (
           <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
         ) : (
-          <span>{route.breadcrumbName}</span>
-        );
+            <span>{route.breadcrumbName}</span>
+          );
       }}
       footerRender={() => defaultFooterDom}
-      menuDataRender={menuDataRender}
+      menuDataRender={() => menu.state.menuData}
       rightContentRender={() => <RightContent />}
       {...props}
       {...settings}
@@ -166,4 +207,5 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
 export default connect(({ global, settings }: ConnectState) => ({
   collapsed: global.collapsed,
   settings,
+  menuData: menu.state.menuData,
 }))(BasicLayout);

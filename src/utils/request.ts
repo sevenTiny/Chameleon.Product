@@ -50,7 +50,10 @@ const errorHandler = (error: { response: Response }): Response => {
  */
 const request = extend({
   errorHandler, // 默认错误处理
-  credentials: 'include', // 默认请求是否带上cookie
+  // credentials: 'include', // 默认请求是否带上cookie
+  headers:{
+    'Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxNTk0MDE4NjgxMjU3IiwiVXNlckVtYWlsIjoic2V2ZW50aW55QGZveG1haWwuY29tIiwiVXNlck5hbWUiOiJzZXZlbnRpbnkiLCJDaGFtZWxlb25Sb2xlIjoiMiIsIk9yZ2FuaXphdGlvbiI6ImNjNDg3MTBmLTkxNTAtNDBkYS1hNmIxLTQwMTY3N2RiNDkxZCIsIlByb2ZpbGUiOiJjODE5NDA0Zi0zNDgwLTRmYWYtODg3Ni01MWZmMDhkMWQ5NjUiLCJBdmF0YXJQaWNJZCI6IjVmMjBlYTFiNGY2M2FlMDAwMTNhZmI4YSIsImV4cCI6MTU5NjUyNDQxNiwiaXNzIjoicHJvZC43dGlueS5jb20iLCJhdWQiOiJwcm9kLjd0aW55LmNvbTozOTAzMSJ9.nTEva6GKsj6MWkTJX2z4IhOeawTMMqp9ogH46Fb-2tE'
+  },
 });
 
 export default request;

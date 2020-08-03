@@ -7,7 +7,7 @@ export interface LoginParamsType {
   captcha: string;
 }
 
-export async function fakeAccountLogin(params: LoginParamsType) {
+export function fakeAccountLogin(params: LoginParamsType) {
   return request('/api/login/account', {
     method: 'POST',
     data: params,
