@@ -1,6 +1,6 @@
-import { chameleonSystemInfo } from '@/services/account'
 import { Effect, Reducer } from 'umi';
 import { MenuDataItem } from '@ant-design/pro-layout';
+import request from '@/utils/request';
 
 export interface MenuModelState {
     menuData: MenuDataItem[];
@@ -13,8 +13,29 @@ export interface MenuModelType {
         getMenuData: Effect;
     };
     reducers: {
-        save: Reducer<MenuModelState>;
+        saveMenuData: Reducer<MenuModelState>;
     };
+}
+
+const menuFormatter = (response: any) => {
+    if (response === null)
+        return [];
+
+    var re = response.map((item: { name: string; route: string; children: any; }) => {
+        const result = {
+            children: {},
+            name: item.name,
+            path: item.route === null ? '/' : item.route,
+        };
+
+        if (item.children) {
+            result.children = menuFormatter(item.children);
+        }
+
+        return result;
+    })
+
+    return re;
 }
 
 const MenuModel: MenuModelType = {
@@ -22,19 +43,19 @@ const MenuModel: MenuModelType = {
     state: {
         menuData: [],
     },
-    
+
     effects: {
-        *getMenuData({ }, { call, put }) {
-            const response = yield call(chameleonSystemInfo);
+        *getMenuData(_, { put }) {
+            const response = yield request('http://prod.7tiny.com:39011/System/ChameleonSystemInfo');
             yield put({
-                type: 'save',
-                payload: response.data.menuData,
+                type: 'saveMenuData',
+                payload: menuFormatter(response.data.viewMenu),
             });
         },
     },
 
     reducers: {
-        save(state, action) {
+        saveMenuData(state, action) {
             return {
                 ...state,
                 menuData: action.payload || [],

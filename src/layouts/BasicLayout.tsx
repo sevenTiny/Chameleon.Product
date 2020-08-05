@@ -8,6 +8,7 @@ import ProLayout, {
   BasicLayoutProps as ProLayoutProps,
   Settings,
   DefaultFooter,
+  SettingDrawer,
 } from '@ant-design/pro-layout';
 import React, { useEffect } from 'react';
 import { Link, useIntl, connect, Dispatch, history } from 'umi';
@@ -18,8 +19,6 @@ import RightContent from '@/components/GlobalHeader/RightContent';
 import { ConnectState } from '@/models/connect';
 import { getAuthorityFromRouter } from '@/utils/utils';
 import logo from '../assets/logo.svg';
-import menu from '@/models/menu';
-
 const noMatch = (
   <Result
     status={403}
@@ -41,6 +40,7 @@ export interface BasicLayoutProps extends ProLayoutProps {
   };
   settings: Settings;
   dispatch: Dispatch;
+  menuData: MenuDataItem[];
 }
 export type BasicLayoutContext = { [K in 'location']: BasicLayoutProps[K] } & {
   breadcrumbNameMap: {
@@ -50,7 +50,6 @@ export type BasicLayoutContext = { [K in 'location']: BasicLayoutProps[K] } & {
 /**
  * use Authorized check all menu item
  */
-
 // const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] =>
 //   menuList.map((item) => {
 //     const localItem = {
@@ -59,43 +58,6 @@ export type BasicLayoutContext = { [K in 'location']: BasicLayoutProps[K] } & {
 //     };
 //     return Authorized.check(item.authority, localItem, null) as MenuDataItem;
 //   });
-
-const menuDataRender = (): MenuDataItem[] => {
-
-  const menudata = menu.state.menuData;
-
-  console.log(menudata)
-
-  return menudata;
-
-  var re = [
-    {
-      name: '组织人事',
-      path: '/welcome',
-      children: [
-        {
-          name: '员工信息',
-          path: '/'
-        },
-        {
-          name: '任职记录',
-          path: '/'
-        }
-      ]
-    },
-    {
-      name: '薪酬管理',
-      path: '/',
-      children: [
-        {
-          name: '薪资档案',
-          path: '/'
-        }
-      ]
-    }
-  ]
-  return re;
-};
 
 const defaultFooterDom = (
   <DefaultFooter
@@ -131,6 +93,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
     location = {
       pathname: '/',
     },
+    menuData,
   } = props;
   /**
    * constructor
@@ -163,49 +126,62 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
     authority: undefined,
   };
   const { formatMessage } = useIntl();
-
   return (
-    <ProLayout
-      logo={logo}
-      formatMessage={formatMessage}
-      onCollapse={handleMenuCollapse}
-      onMenuHeaderClick={() => history.push('/')}
-      menuItemRender={(menuItemProps, defaultDom) => {
-        if (menuItemProps.isUrl || !menuItemProps.path) {
-          return defaultDom;
-        }
-        return <Link to={menuItemProps.path}>{defaultDom}</Link>;
-      }}
-      breadcrumbRender={(routers = []) => [
-        {
-          path: '/',
-          breadcrumbName: formatMessage({ id: 'menu.home' }),
-        },
-        ...routers,
-      ]}
-      itemRender={(route, params, routes, paths) => {
-        const first = routes.indexOf(route) === 0;
-        return first ? (
-          <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
-        ) : (
+    <>
+      <ProLayout
+        logo={logo}
+        formatMessage={formatMessage}
+        onCollapse={handleMenuCollapse}
+        onMenuHeaderClick={() => history.push('/')}
+        menuItemRender={(menuItemProps, defaultDom) => {
+          if (menuItemProps.isUrl || !menuItemProps.path) {
+            return defaultDom;
+          }
+
+          return <Link to={menuItemProps.path}>{defaultDom}</Link>;
+        }}
+        breadcrumbRender={(routers = []) => [
+          {
+            path: '/',
+            breadcrumbName: formatMessage({
+              id: 'menu.home',
+            }),
+          },
+          ...routers,
+        ]}
+        itemRender={(route, params, routes, paths) => {
+          const first = routes.indexOf(route) === 0;
+          return first ? (
+            <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
+          ) : (
             <span>{route.breadcrumbName}</span>
           );
-      }}
-      footerRender={() => defaultFooterDom}
-      menuDataRender={() => menu.state.menuData}
-      rightContentRender={() => <RightContent />}
-      {...props}
-      {...settings}
-    >
-      <Authorized authority={authorized!.authority} noMatch={noMatch}>
-        {children}
-      </Authorized>
-    </ProLayout>
+        }}
+        footerRender={() => defaultFooterDom}
+        menuDataRender={() => menuData}
+        rightContentRender={() => <RightContent />}
+        {...props}
+        {...settings}
+      >
+        <Authorized authority={authorized!.authority} noMatch={noMatch}>
+          {children}
+        </Authorized>
+      </ProLayout>
+      <SettingDrawer
+        settings={settings}
+        onSettingChange={(config) =>
+          dispatch({
+            type: 'settings/changeSetting',
+            payload: config,
+          })
+        }
+      />
+    </>
   );
 };
 
-export default connect(({ global, settings }: ConnectState) => ({
+export default connect(({ global, settings, menu }: ConnectState) => ({
   collapsed: global.collapsed,
   settings,
-  menuData: menu.state.menuData,
+  menuData: menu.menuData,
 }))(BasicLayout);
