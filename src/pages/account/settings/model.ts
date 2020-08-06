@@ -46,11 +46,11 @@ const Model: ModelType = {
       });
     },
     *fetchCurrent(_, { call, put }) {
-      const response = yield call(queryCurrent);
-      yield put({
-        type: 'saveCurrentUser',
-        payload: response,
-      });
+      // const response = yield call(queryCurrent);
+      // yield put({
+      //   type: 'saveCurrentUser',
+      //   payload: response,
+      // });
     },
     *fetchProvince(_, { call, put }) {
       yield put({

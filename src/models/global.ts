@@ -1,10 +1,8 @@
 import { Subscription, Reducer, Effect } from 'umi';
-
 import { NoticeIconData } from '@/components/NoticeIcon';
 import { queryNotices } from '@/services/user';
 import { ConnectState } from './connect.d';
 import request from '@/utils/request';
-import defaultSettings from '../../config/defaultSettings';
 import { MenuDataItem } from '@ant-design/pro-layout';
 
 export interface NoticeItem extends NoticeIconData {
@@ -100,22 +98,21 @@ const GlobalModel: GlobalModelType = {
 
   effects: {
     *fetchNotices(_, { call, put, select }) {
-      const data = yield call(queryNotices);
-      yield put({
-        type: 'saveNotices',
-        payload: data,
-      });
-      const unreadCount: number = yield select(
-        (state: ConnectState) => state.global.notices.filter((item) => !item.read).length,
-      );
+      const data = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageCount');
+      // yield put({
+      //   type: 'saveNotices',
+      //   payload: data,
+      // });
+      const unreadCount: number = data.data
       yield put({
         type: 'user/changeNotifyCount',
         payload: {
-          totalCount: data.length,
+          totalCount: 999,
           unreadCount,
         },
       });
     },
+    
     *clearNotices({ payload }, { put, select }) {
       yield put({
         type: 'saveClearedNotices',
@@ -168,7 +165,7 @@ const GlobalModel: GlobalModelType = {
           }
         });
       } else {
-        const response = yield request(defaultSettings.dataApiHost + '/System/ChameleonSystemInfo');
+        const response = yield request('/System/ChameleonSystemInfo');
         const data = response.data
         yield put({
           type: 'saveChameleonGlobal',

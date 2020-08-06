@@ -4,6 +4,8 @@
  */
 import { extend } from 'umi-request';
 import { notification } from 'antd';
+import defaultSettings from '../../config/defaultSettings';
+import cookie from 'react-cookies'
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -47,13 +49,44 @@ const errorHandler = (error: { response: Response }): Response => {
 
 /**
  * 配置request请求时的默认参数
+ * request使用参考：https://zhuanlan.zhihu.com/p/88997003
  */
 const request = extend({
   errorHandler, // 默认错误处理
+  prefix: defaultSettings.dataApiHost,
   // credentials: 'include', // 默认请求是否带上cookie
-  headers:{
-    // 'Authorization':'Bearer eyJh'
-  },
 });
+
+// request拦截器
+request.interceptors.request.use((url, options) => {
+  //获取cookie中的token（登陆时写入）
+  const token = cookie.load('_AccessToken');
+  return (
+    {
+      options: {
+        ...options,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      },
+    }
+  );
+});
+
+// response拦截器, 处理response
+request.interceptors.response.use(async (response) => {
+
+  if (response && response.status == 200) {
+    const data = await response.clone().json();
+    if (data && data.success) {
+      console.log(data);
+    }
+    //这里根据code判断异常类型，决定是否重新登陆
+    // 跳转至至指定500页面
+    // history.push('/500');
+  }
+  return response
+});
+
 
 export default request;

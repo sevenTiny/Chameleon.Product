@@ -6,13 +6,17 @@ import { ConnectState } from '@/models/connect';
 import { CurrentUser } from '@/models/user';
 import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
+import { ChameleonGlobal } from '@/models/global';
+import defaultSettings from '../../../config/defaultSettings';
 
 export interface GlobalHeaderRightProps extends Partial<ConnectProps> {
   currentUser?: CurrentUser;
   menu?: boolean;
+  chameleonGlobal: ChameleonGlobal;
 }
 
 class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
+
   onMenuClick = (event: {
     key: React.Key;
     keyPath: React.Key[];
@@ -39,11 +43,12 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
   render(): React.ReactNode {
     const {
       currentUser = {
-        avatar: '',
-        name: '',
+        avatar: defaultSettings.dataApiHost + '/api/File?_interface=ChameleonSystem.FDS.AccountAvatarDownload&_fileId=' + this.props.chameleonGlobal.avatarPicId,
+        name: this.props.chameleonGlobal.userEmail,
       },
       menu,
     } = this.props;
+
     const menuHeaderDropdown = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={this.onMenuClick}>
         {menu && (
@@ -74,19 +79,20 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
         </span>
       </HeaderDropdown>
     ) : (
-      <span className={`${styles.action} ${styles.account}`}>
-        <Spin
-          size="small"
-          style={{
-            marginLeft: 8,
-            marginRight: 8,
-          }}
-        />
-      </span>
-    );
+        <span className={`${styles.action} ${styles.account}`}>
+          <Spin
+            size="small"
+            style={{
+              marginLeft: 8,
+              marginRight: 8,
+            }}
+          />
+        </span>
+      );
   }
 }
 
-export default connect(({ user }: ConnectState) => ({
+export default connect(({ user, global }: ConnectState) => ({
   currentUser: user.currentUser,
+  chameleonGlobal: global !== undefined ? global.chameleonGlobal : undefined
 }))(AvatarDropdown);
