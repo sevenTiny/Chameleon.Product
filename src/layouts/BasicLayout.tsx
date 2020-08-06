@@ -19,6 +19,8 @@ import RightContent from '@/components/GlobalHeader/RightContent';
 import { ConnectState } from '@/models/connect';
 import { getAuthorityFromRouter } from '@/utils/utils';
 import logo from '../assets/logo.svg';
+import { ChameleonGlobal } from '@/models/global';
+
 const noMatch = (
   <Result
     status={403}
@@ -40,7 +42,7 @@ export interface BasicLayoutProps extends ProLayoutProps {
   };
   settings: Settings;
   dispatch: Dispatch;
-  menuData: MenuDataItem[];
+  chameleonGlobal: ChameleonGlobal;
 }
 export type BasicLayoutContext = { [K in 'location']: BasicLayoutProps[K] } & {
   breadcrumbNameMap: {
@@ -93,7 +95,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
     location = {
       pathname: '/',
     },
-    menuData,
+    chameleonGlobal
   } = props;
   /**
    * constructor
@@ -105,7 +107,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         type: 'user/fetchCurrent',
       });
       dispatch({
-        type: 'menu/getMenuData',
+        type: 'global/fetchChameleonGlobal',
       });
     }
   }, []);
@@ -154,11 +156,11 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
           return first ? (
             <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
           ) : (
-            <span>{route.breadcrumbName}</span>
-          );
+              <span>{route.breadcrumbName}</span>
+            );
         }}
         footerRender={() => defaultFooterDom}
-        menuDataRender={() => menuData}
+        menuDataRender={() => chameleonGlobal !== undefined ? chameleonGlobal.viewMenu : []}
         rightContentRender={() => <RightContent />}
         {...props}
         {...settings}
@@ -180,8 +182,8 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
   );
 };
 
-export default connect(({ global, settings, menu }: ConnectState) => ({
+export default connect(({ global, settings }: ConnectState) => ({
   collapsed: global.collapsed,
   settings,
-  menuData: menu.menuData,
+  chameleonGlobal: global !== undefined ? global.chameleonGlobal : undefined
 }))(BasicLayout);

@@ -3,6 +3,9 @@ import { Subscription, Reducer, Effect } from 'umi';
 import { NoticeIconData } from '@/components/NoticeIcon';
 import { queryNotices } from '@/services/user';
 import { ConnectState } from './connect.d';
+import request from '@/utils/request';
+import defaultSettings from '../../config/defaultSettings';
+import { MenuDataItem } from '@ant-design/pro-layout';
 
 export interface NoticeItem extends NoticeIconData {
   id: string;
@@ -10,9 +13,32 @@ export interface NoticeItem extends NoticeIconData {
   status: string;
 }
 
+export interface ViewMenu {
+  id: string,
+  name: string,
+  route: string,
+  children: ViewMenu
+}
+
+//Chameleon全局信息
+export interface ChameleonGlobal {
+  avatarPicId: string,
+  userEmail: string,
+  userId: number,
+  userProfileId: string,
+  userRoleId: number,
+  //功能
+  viewFunction: string[],
+  //菜单
+  viewMenu: MenuDataItem[],
+  //是否初始化过
+  hasInit: boolean
+}
+
 export interface GlobalModelState {
   collapsed: boolean;
   notices: NoticeItem[];
+  chameleonGlobal?: ChameleonGlobal
 }
 
 export interface GlobalModelType {
@@ -22,13 +48,36 @@ export interface GlobalModelType {
     fetchNotices: Effect;
     clearNotices: Effect;
     changeNoticeReadState: Effect;
+    fetchChameleonGlobal: Effect;
   };
   reducers: {
     changeLayoutCollapsed: Reducer<GlobalModelState>;
     saveNotices: Reducer<GlobalModelState>;
     saveClearedNotices: Reducer<GlobalModelState>;
+    saveChameleonGlobal: Reducer<GlobalModelState>;
   };
   subscriptions: { setup: Subscription };
+}
+
+const menuFormatter = (response: any) => {
+  if (response === null)
+    return [];
+
+  var re = response.map((item: { name: string; route: string; children: any; }) => {
+    const result = {
+      children: {},
+      name: item.name,
+      path: item.route === null ? '/' : item.route,
+    };
+
+    if (item.children) {
+      result.children = menuFormatter(item.children);
+    }
+
+    return result;
+  })
+
+  return re;
 }
 
 const GlobalModel: GlobalModelType = {
@@ -37,6 +86,16 @@ const GlobalModel: GlobalModelType = {
   state: {
     collapsed: false,
     notices: [],
+    chameleonGlobal: {
+      avatarPicId: '',
+      userEmail: '',
+      userId: 0,
+      userProfileId: '',
+      userRoleId: 0,
+      viewFunction: [],
+      viewMenu: [],
+      hasInit: false
+    }
   },
 
   effects: {
@@ -98,6 +157,35 @@ const GlobalModel: GlobalModelType = {
         },
       });
     },
+
+    *fetchChameleonGlobal(_, { select, put }) {
+      const global = yield select((state: GlobalModelType) => state);
+      if (global && global.chameleonGlobal && global.chameleonGlobal.hasInit) {
+        yield put({
+          type: 'saveChameleonGlobal',
+          payload: {
+            chameleonGlobal: global.chameleonGlobal
+          }
+        });
+      } else {
+        const response = yield request(defaultSettings.dataApiHost + '/System/ChameleonSystemInfo');
+        const data = response.data
+        yield put({
+          type: 'saveChameleonGlobal',
+          payload: {
+            chameleonGlobal: {
+              viewMenu: menuFormatter(data.viewMenu),
+              avatarPicId: data.avatarPicId,
+              userEmail: data.userEmail,
+              userId: data.userId,
+              userProfileId: data.userProfileId,
+              userRoleId: data.userRoleId,
+              viewFunction: data.viewFunction || [],
+            }
+          }
+        });
+      }
+    }
   },
 
   reducers: {
@@ -119,6 +207,24 @@ const GlobalModel: GlobalModelType = {
         ...state,
         collapsed: false,
         notices: state.notices.filter((item): boolean => item.type !== payload),
+      };
+    },
+
+    saveChameleonGlobal(state = { notices: [], collapsed: true }, { payload }): GlobalModelState {
+      const cg = payload.chameleonGlobal;
+      return {
+        collapsed: false,
+        notices: [],
+        chameleonGlobal: {
+          avatarPicId: cg.avatarPicId,
+          userEmail: cg.userEmail,
+          userId: cg.userId,
+          userProfileId: cg.userProfileId,
+          userRoleId: cg.userRoleId,
+          viewFunction: cg.viewFunction,
+          viewMenu: cg.viewMenu,
+          hasInit: cg === undefined ? false : true
+        },
       };
     },
   },
