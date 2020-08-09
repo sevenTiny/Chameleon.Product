@@ -35,7 +35,7 @@ export interface ChameleonGlobal {
 
 export interface GlobalModelState {
   collapsed: boolean;
-  notices: NoticeItem[];
+  notices?: NoticeItem[];
   chameleonGlobal?: ChameleonGlobal
 }
 
@@ -78,6 +78,28 @@ const menuFormatter = (response: any) => {
   return re;
 }
 
+const unreadListFormatter = (response: any) => {
+  if (response === null)
+    return [];
+
+  return response.map((item: NoticeItem) => {
+    const result = {
+      id: item['_id'].value,
+      type: '',
+      status: '',
+      avatar: '',
+      title: item['MessageTitle'].value,
+      description: item['MessageContent'].value,
+      datetime: item['SendTime'].value,
+      extra: item['MessageContent'].value,
+      key: '',
+      read: false,
+    };
+
+    return result;
+  })
+}
+
 const GlobalModel: GlobalModelType = {
   namespace: 'global',
 
@@ -98,29 +120,36 @@ const GlobalModel: GlobalModelType = {
 
   effects: {
     *fetchNotices(_, { call, put, select }) {
-      const data = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageCount');
-      // yield put({
-      //   type: 'saveNotices',
-      //   payload: data,
-      // });
-      const unreadCount: number = data.data
+      //未删除&未读消息总数
+      const unreadCount = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageCount');
+      //未删除消息总数
+      const undeletedCount = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.UnDeletedCount');
+
       yield put({
         type: 'user/changeNotifyCount',
         payload: {
-          totalCount: 999,
-          unreadCount,
+          totalCount: undeletedCount.data,
+          unreadCount: unreadCount.data,
         },
       });
+
+      //未读消息列表
+      const unreadListData = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageList');
+
+      yield put({
+        type: 'saveNotices',
+        payload: unreadListFormatter(unreadListData.data),
+      });
     },
-    
+
     *clearNotices({ payload }, { put, select }) {
       yield put({
         type: 'saveClearedNotices',
         payload,
       });
-      const count: number = yield select((state: ConnectState) => state.global.notices.length);
+      const count: number = yield select((state: ConnectState) => state.global.notices?.length);
       const unreadCount: number = yield select(
-        (state: ConnectState) => state.global.notices.filter((item) => !item.read).length,
+        (state: ConnectState) => state.global.notices?.filter((item) => !item.read).length,
       );
       yield put({
         type: 'user/changeNotifyCount',
@@ -132,7 +161,7 @@ const GlobalModel: GlobalModelType = {
     },
     *changeNoticeReadState({ payload }, { put, select }) {
       const notices: NoticeItem[] = yield select((state: ConnectState) =>
-        state.global.notices.map((item) => {
+        state.global.notices?.map((item) => {
           const notice = { ...item };
           if (notice.id === payload) {
             notice.read = true;
@@ -199,15 +228,15 @@ const GlobalModel: GlobalModelType = {
         notices: payload,
       };
     },
-    saveClearedNotices(state = { notices: [], collapsed: true }, { payload }): GlobalModelState {
+    saveClearedNotices(state, { payload }): GlobalModelState {
       return {
         ...state,
         collapsed: false,
-        notices: state.notices.filter((item): boolean => item.type !== payload),
+        notices: state?.notices,
       };
     },
 
-    saveChameleonGlobal(state = { notices: [], collapsed: true }, { payload }): GlobalModelState {
+    saveChameleonGlobal(state, { payload }): GlobalModelState {
       const cg = payload.chameleonGlobal;
       return {
         collapsed: false,

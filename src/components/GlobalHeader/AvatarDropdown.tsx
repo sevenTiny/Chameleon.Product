@@ -42,12 +42,13 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
 
   render(): React.ReactNode {
     const {
-      currentUser = {
-        avatar: defaultSettings.dataApiHost + '/api/File?_interface=ChameleonSystem.FDS.AccountAvatarDownload&_fileId=' + this.props.chameleonGlobal.avatarPicId,
-        name: this.props.chameleonGlobal.userEmail,
-      },
+      currentUser = {},
       menu,
     } = this.props;
+
+    //赋值头像喝姓名
+    currentUser.avatar = defaultSettings.dataApiHost + '/api/File?_interface=ChameleonSystem.FDS.AccountAvatarDownload&_fileId=' + this.props.chameleonGlobal.avatarPicId;
+    currentUser.name = this.props.chameleonGlobal.userEmail;
 
     const menuHeaderDropdown = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={this.onMenuClick}>
