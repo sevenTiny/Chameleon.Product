@@ -16,7 +16,6 @@ export interface GlobalHeaderRightProps extends Partial<ConnectProps> {
 }
 
 class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
-
   onMenuClick = (event: {
     key: React.Key;
     keyPath: React.Key[];
@@ -41,13 +40,13 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
   };
 
   render(): React.ReactNode {
-    const {
-      currentUser = {},
-      menu,
-    } = this.props;
+    const { currentUser = {}, menu } = this.props;
 
     //赋值头像喝姓名
-    currentUser.avatar = defaultSettings.dataApiHost + '/api/File?_interface=ChameleonSystem.FDS.AccountAvatarDownload&_fileId=' + this.props.chameleonGlobal.avatarPicId;
+    currentUser.avatar =
+      defaultSettings.dataApiHost +
+      '/api/File?_interface=ChameleonSystem.FDS.AccountAvatarDownload&_fileId=' +
+      this.props.chameleonGlobal.avatarPicId;
     currentUser.name = this.props.chameleonGlobal.userEmail;
 
     const menuHeaderDropdown = (
@@ -80,20 +79,20 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
         </span>
       </HeaderDropdown>
     ) : (
-        <span className={`${styles.action} ${styles.account}`}>
-          <Spin
-            size="small"
-            style={{
-              marginLeft: 8,
-              marginRight: 8,
-            }}
-          />
-        </span>
-      );
+      <span className={`${styles.action} ${styles.account}`}>
+        <Spin
+          size="small"
+          style={{
+            marginLeft: 8,
+            marginRight: 8,
+          }}
+        />
+      </span>
+    );
   }
 }
 
 export default connect(({ user, global }: ConnectState) => ({
   currentUser: user.currentUser,
-  chameleonGlobal: global !== undefined ? global.chameleonGlobal : undefined
+  chameleonGlobal: global !== undefined ? global.chameleonGlobal : undefined,
 }))(AvatarDropdown);

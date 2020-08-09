@@ -12,31 +12,31 @@ export interface NoticeItem extends NoticeIconData {
 }
 
 export interface ViewMenu {
-  id: string,
-  name: string,
-  route: string,
-  children: ViewMenu
+  id: string;
+  name: string;
+  route: string;
+  children: ViewMenu;
 }
 
 //Chameleon全局信息
 export interface ChameleonGlobal {
-  avatarPicId: string,
-  userEmail: string,
-  userId: number,
-  userProfileId: string,
-  userRoleId: number,
+  avatarPicId: string;
+  userEmail: string;
+  userId: number;
+  userProfileId: string;
+  userRoleId: number;
   //功能
-  viewFunction: string[],
+  viewFunction: string[];
   //菜单
-  viewMenu: MenuDataItem[],
+  viewMenu: MenuDataItem[];
   //是否初始化过
-  hasInit: boolean
+  hasInit: boolean;
 }
 
 export interface GlobalModelState {
   collapsed: boolean;
   notices?: NoticeItem[];
-  chameleonGlobal?: ChameleonGlobal
+  chameleonGlobal?: ChameleonGlobal;
 }
 
 export interface GlobalModelType {
@@ -58,10 +58,9 @@ export interface GlobalModelType {
 }
 
 const menuFormatter = (response: any) => {
-  if (response === null)
-    return [];
+  if (response === null) return [];
 
-  var re = response.map((item: { name: string; route: string; children: any; }) => {
+  var re = response.map((item: { name: string; route: string; children: any }) => {
     const result = {
       children: {},
       name: item.name,
@@ -73,14 +72,13 @@ const menuFormatter = (response: any) => {
     }
 
     return result;
-  })
+  });
 
   return re;
-}
+};
 
 const unreadListFormatter = (response: any) => {
-  if (response === null)
-    return [];
+  if (response === null) return [];
 
   return response.map((item: NoticeItem) => {
     const result = {
@@ -97,8 +95,8 @@ const unreadListFormatter = (response: any) => {
     };
 
     return result;
-  })
-}
+  });
+};
 
 const GlobalModel: GlobalModelType = {
   namespace: 'global',
@@ -114,16 +112,20 @@ const GlobalModel: GlobalModelType = {
       userRoleId: 0,
       viewFunction: [],
       viewMenu: [],
-      hasInit: false
-    }
+      hasInit: false,
+    },
   },
 
   effects: {
     *fetchNotices(_, { call, put, select }) {
       //未删除&未读消息总数
-      const unreadCount = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageCount');
+      const unreadCount = yield request(
+        '/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageCount',
+      );
       //未删除消息总数
-      const undeletedCount = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.UnDeletedCount');
+      const undeletedCount = yield request(
+        '/api/CloudData?_interface=ChameleonSystem.MessageAlert.UnDeletedCount',
+      );
 
       yield put({
         type: 'user/changeNotifyCount',
@@ -134,7 +136,9 @@ const GlobalModel: GlobalModelType = {
       });
 
       //未读消息列表
-      const unreadListData = yield request('/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageList');
+      const unreadListData = yield request(
+        '/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageList',
+      );
 
       yield put({
         type: 'saveNotices',
@@ -190,12 +194,12 @@ const GlobalModel: GlobalModelType = {
         yield put({
           type: 'saveChameleonGlobal',
           payload: {
-            chameleonGlobal: global.chameleonGlobal
-          }
+            chameleonGlobal: global.chameleonGlobal,
+          },
         });
       } else {
         const response = yield request('/System/ChameleonSystemInfo');
-        const data = response.data
+        const data = response.data;
         yield put({
           type: 'saveChameleonGlobal',
           payload: {
@@ -207,11 +211,11 @@ const GlobalModel: GlobalModelType = {
               userProfileId: data.userProfileId,
               userRoleId: data.userRoleId,
               viewFunction: data.viewFunction || [],
-            }
-          }
+            },
+          },
         });
       }
-    }
+    },
   },
 
   reducers: {
@@ -249,7 +253,7 @@ const GlobalModel: GlobalModelType = {
           userRoleId: cg.userRoleId,
           viewFunction: cg.viewFunction,
           viewMenu: cg.viewMenu,
-          hasInit: cg === undefined ? false : true
+          hasInit: cg === undefined ? false : true,
         },
       };
     },
