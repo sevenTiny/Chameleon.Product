@@ -11,6 +11,7 @@ import styles from './index.less';
 const { TabPane } = Tabs;
 
 export interface NoticeIconData {
+  id: string;
   avatar?: string | React.ReactNode;
   title?: React.ReactNode;
   description?: React.ReactNode;

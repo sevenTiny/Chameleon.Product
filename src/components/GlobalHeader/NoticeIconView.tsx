@@ -3,14 +3,14 @@ import { connect, ConnectProps } from 'umi';
 import { Tag, message } from 'antd';
 import groupBy from 'lodash/groupBy';
 import moment from 'moment';
-import { NoticeItem } from '@/models/global';
+import { ChameleonNotice } from '@/models/global';
 import { CurrentUser } from '@/models/user';
 import { ConnectState } from '@/models/connect';
-import NoticeIcon from '../NoticeIcon';
+import NoticeIcon, { NoticeIconData } from '../NoticeIcon';
 import styles from './index.less';
 
 export interface GlobalHeaderRightProps extends Partial<ConnectProps> {
-  notices?: NoticeItem[];
+  chameleonNotice?: ChameleonNotice;
   currentUser?: CurrentUser;
   fetchingNotices?: boolean;
   onNoticeVisibleChange?: (visible: boolean) => void;
@@ -28,7 +28,7 @@ class GlobalHeaderRight extends Component<GlobalHeaderRightProps> {
     }
   }
 
-  changeReadState = (clickedItem: NoticeItem): void => {
+  changeReadState = (clickedItem: NoticeIconData): void => {
     const { id } = clickedItem;
     const { dispatch } = this.props;
 
@@ -52,78 +52,32 @@ class GlobalHeaderRight extends Component<GlobalHeaderRightProps> {
     }
   };
 
-  getNoticeData = (): {
-    [key: string]: NoticeItem[];
-  } => {
-    const { notices = [] } = this.props;
-
-    if (!notices || notices.length === 0 || !Array.isArray(notices)) {
-      return {};
-    }
-
-    const newNotices = notices.map((notice) => {
-      const newNotice = { ...notice };
-
-      if (newNotice.datetime) {
-        newNotice.datetime = moment(notice.datetime as string).fromNow();
-      }
-
-      if (newNotice.id) {
-        newNotice.key = newNotice.id;
-      }
-
-      if (newNotice.extra && newNotice.status) {
-        const color = {
-          todo: '',
-          processing: 'blue',
-          urgent: 'red',
-          doing: 'gold',
-        }[newNotice.status];
-        newNotice.extra = (
-          <Tag
-            color={color}
-            style={{
-              marginRight: 0,
-            }}
-          >
-            {newNotice.extra}
-          </Tag>
-        );
-      }
-
-      return newNotice;
-    });
-    return groupBy(newNotices, 'type');
-  };
-
-  getUnreadData = (noticeData: { [key: string]: NoticeItem[] }) => {
-    const unreadMsg: {
-      [key: string]: number;
-    } = {};
-    Object.keys(noticeData).forEach((key) => {
-      const value = noticeData[key];
-
-      if (!unreadMsg[key]) {
-        unreadMsg[key] = 0;
-      }
-
-      if (Array.isArray(value)) {
-        unreadMsg[key] = value.filter((item) => !item.read).length;
-      }
-    });
-    return unreadMsg;
-  };
-
   render() {
-    const { currentUser, fetchingNotices, onNoticeVisibleChange } = this.props;
-    const noticeData = this.props.notices !== undefined ? this.props.notices : [];
-    const unreadMsg = undefined;
+    const { fetchingNotices, onNoticeVisibleChange } = this.props;
+    const chameleonNotice = this.props.chameleonNotice !== undefined ? this.props.chameleonNotice : {
+      // 未读消息列表
+      unReadMsgList: [],
+      // 已读消息列表
+      readMsgList: [],
+      // 消息总数
+      msgTotalCount: 0,
+      // 未读消息总数
+      msgUnReadCount: 0,
+      // 未读待办列表
+      unReadTodoList: [],
+      // 已读待办列表
+      readTodoList: [],
+      // 待办总数
+      todoTotalCount: 0,
+      // 未读待办总数
+      todoUnReadCount: 0,
+    };
     return (
       <NoticeIcon
         className={styles.action}
-        count={currentUser && currentUser.unreadCount}
+        count={chameleonNotice && chameleonNotice.msgUnReadCount}
         onItemClick={(item) => {
-          this.changeReadState(item as NoticeItem);
+          this.changeReadState(item as NoticeIconData);
         }}
         loading={fetchingNotices}
         clearText="清空"
@@ -136,17 +90,9 @@ class GlobalHeaderRight extends Component<GlobalHeaderRightProps> {
         <NoticeIcon.Tab
           tabKey="notification"
           // count={unreadMsg}
-          list={noticeData}
+          list={chameleonNotice.unReadMsgList}
           title="通知"
           emptyText="你已查看所有通知"
-          showViewMore
-        />
-        <NoticeIcon.Tab
-          tabKey="message"
-          // count={unreadMsg}
-          list={[]}
-          title="消息"
-          emptyText="您已读完所有消息"
           showViewMore
         />
         <NoticeIcon.Tab
@@ -167,5 +113,5 @@ export default connect(({ user, global, loading }: ConnectState) => ({
   collapsed: global.collapsed,
   fetchingMoreNotices: loading.effects['global/fetchMoreNotices'],
   fetchingNotices: loading.effects['global/fetchNotices'],
-  notices: global.notices,
+  chameleonNotice: global.chameleonNotice,
 }))(GlobalHeaderRight);

@@ -1,16 +1,30 @@
 import { Subscription, Reducer, Effect } from 'umi';
 import { NoticeIconData } from '@/components/NoticeIcon';
-import { queryNotices } from '@/services/user';
 import { ConnectState } from './connect.d';
 import request from '@/utils/request';
 import { MenuDataItem } from '@ant-design/pro-layout';
 
-export interface NoticeItem extends NoticeIconData {
-  id: string;
-  type: string;
-  status: string;
+// 通知
+export interface ChameleonNotice {
+  // 未读消息列表
+  unReadMsgList: NoticeIconData[],
+  // 已读消息列表
+  readMsgList: NoticeIconData[],
+  // 消息总数
+  msgTotalCount: number,
+  // 未读消息总数
+  msgUnReadCount: number,
+  // 未读待办列表
+  unReadTodoList: NoticeIconData[],
+  // 已读待办列表
+  readTodoList: NoticeIconData[],
+  // 待办总数
+  todoTotalCount: number,
+  // 未读待办总数
+  todoUnReadCount: number,
 }
 
+// 菜单
 export interface ViewMenu {
   id: string;
   name: string;
@@ -35,7 +49,7 @@ export interface ChameleonGlobal {
 
 export interface GlobalModelState {
   collapsed: boolean;
-  notices?: NoticeItem[];
+  chameleonNotice?: ChameleonNotice;
   chameleonGlobal?: ChameleonGlobal;
 }
 
@@ -57,6 +71,7 @@ export interface GlobalModelType {
   subscriptions: { setup: Subscription };
 }
 
+// 菜单格式化
 const menuFormatter = (response: any) => {
   if (response === null) return [];
 
@@ -77,19 +92,18 @@ const menuFormatter = (response: any) => {
   return re;
 };
 
+// 未读消息列表格式化
 const unreadListFormatter = (response: any) => {
   if (response === null) return [];
 
-  return response.map((item: NoticeItem) => {
+  return response.map((item: NoticeIconData) => {
     const result = {
       id: item['_id'].value,
-      type: '',
-      status: '',
       avatar: '',
-      title: item['MessageTitle'].value,
-      description: item['MessageContent'].value,
+      title: item['MessageTitle'].text,
+      description: item['MessageContent'].text,
       datetime: item['SendTime'].value,
-      extra: item['MessageContent'].value,
+      // extra: item['MessageContent'].value,
       key: '',
       read: false,
     };
@@ -103,7 +117,24 @@ const GlobalModel: GlobalModelType = {
 
   state: {
     collapsed: false,
-    notices: [],
+    chameleonNotice: {
+      // 未读消息列表
+      unReadMsgList: [],
+      // 已读消息列表
+      readMsgList: [],
+      // 消息总数
+      msgTotalCount: 0,
+      // 未读消息总数
+      msgUnReadCount: 0,
+      // 未读待办列表
+      unReadTodoList: [],
+      // 已读待办列表
+      readTodoList: [],
+      // 待办总数
+      todoTotalCount: 0,
+      // 未读待办总数
+      todoUnReadCount: 0,
+    },
     chameleonGlobal: {
       avatarPicId: '',
       userEmail: '',
@@ -119,22 +150,13 @@ const GlobalModel: GlobalModelType = {
   effects: {
     *fetchNotices(_, { call, put, select }) {
       //未删除&未读消息总数
-      const unreadCount = yield request(
+      const unreadMsgCount = yield request(
         '/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageCount',
       );
       //未删除消息总数
-      const undeletedCount = yield request(
+      const undeletedMsgCount = yield request(
         '/api/CloudData?_interface=ChameleonSystem.MessageAlert.UnDeletedCount',
       );
-
-      yield put({
-        type: 'user/changeNotifyCount',
-        payload: {
-          totalCount: undeletedCount.data,
-          unreadCount: unreadCount.data,
-        },
-      });
-
       //未读消息列表
       const unreadListData = yield request(
         '/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageList',
@@ -142,7 +164,11 @@ const GlobalModel: GlobalModelType = {
 
       yield put({
         type: 'saveNotices',
-        payload: unreadListFormatter(unreadListData.data),
+        payload: {
+          unReadMsgList: unreadListFormatter(unreadListData.data),
+          msgTotalCount: undeletedMsgCount.data,
+          msgUnReadCount: unreadMsgCount.data,
+        }
       });
     },
 
@@ -151,41 +177,42 @@ const GlobalModel: GlobalModelType = {
         type: 'saveClearedNotices',
         payload,
       });
-      const count: number = yield select((state: ConnectState) => state.global.notices?.length);
-      const unreadCount: number = yield select(
-        (state: ConnectState) => state.global.notices?.filter((item) => !item.read).length,
-      );
-      yield put({
-        type: 'user/changeNotifyCount',
-        payload: {
-          totalCount: count,
-          unreadCount,
-        },
-      });
+      // const count: number = yield select((state: ConnectState) => state.global.notices?.length);
+      // const unreadCount: number = yield select(
+      //   (state: ConnectState) => state.global.notices?.filter((item) => !item.read).length,
+      // );
+      // yield put({
+      //   type: 'user/changeNotifyCount',
+      //   payload: {
+      //     totalCount: count,
+      //     unreadCount,
+      //   },
+      // });
     },
+
     *changeNoticeReadState({ payload }, { put, select }) {
-      const notices: NoticeItem[] = yield select((state: ConnectState) =>
-        state.global.notices?.map((item) => {
-          const notice = { ...item };
-          if (notice.id === payload) {
-            notice.read = true;
-          }
-          return notice;
-        }),
-      );
+      // const notices: NoticeItem[] = yield select((state: ConnectState) =>
+      //   state.global.notices?.map((item) => {
+      //     const notice = { ...item };
+      //     if (notice.id === payload) {
+      //       notice.read = true;
+      //     }
+      //     return notice;
+      //   }),
+      // );
 
-      yield put({
-        type: 'saveNotices',
-        payload: notices,
-      });
+      // yield put({
+      //   type: 'saveNotices',
+      //   payload: notices,
+      // });
 
-      yield put({
-        type: 'user/changeNotifyCount',
-        payload: {
-          totalCount: notices.length,
-          unreadCount: notices.filter((item) => !item.read).length,
-        },
-      });
+      // yield put({
+      //   type: 'user/changeNotifyCount',
+      //   payload: {
+      //     totalCount: notices.length,
+      //     unreadCount: notices.filter((item) => !item.read).length,
+      //   },
+      // });
     },
 
     *fetchChameleonGlobal(_, { select, put }) {
@@ -219,7 +246,7 @@ const GlobalModel: GlobalModelType = {
   },
 
   reducers: {
-    changeLayoutCollapsed(state = { notices: [], collapsed: true }, { payload }): GlobalModelState {
+    changeLayoutCollapsed(state = { collapsed: true }, { payload }): GlobalModelState {
       return {
         ...state,
         collapsed: payload,
@@ -229,14 +256,13 @@ const GlobalModel: GlobalModelType = {
       return {
         collapsed: false,
         ...state,
-        notices: payload,
+        chameleonNotice: payload,
       };
     },
     saveClearedNotices(state, { payload }): GlobalModelState {
       return {
         ...state,
         collapsed: false,
-        notices: state?.notices,
       };
     },
 
@@ -244,7 +270,6 @@ const GlobalModel: GlobalModelType = {
       const cg = payload.chameleonGlobal;
       return {
         collapsed: false,
-        notices: [],
         chameleonGlobal: {
           avatarPicId: cg.avatarPicId,
           userEmail: cg.userEmail,
