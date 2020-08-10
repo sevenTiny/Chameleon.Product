@@ -14,6 +14,7 @@ export interface NoticeIconData {
   id: string;
   avatar?: string | React.ReactNode;
   title?: React.ReactNode;
+  content?: string;
   description?: React.ReactNode;
   datetime?: React.ReactNode;
   extra?: React.ReactNode;

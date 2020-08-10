@@ -59,8 +59,8 @@ const NoticeList: React.SFC<NoticeIconTabProps> = ({
             typeof item.avatar === 'string' ? (
               <Avatar className={styles.avatar} src={item.avatar} />
             ) : (
-              <span className={styles.iconElement}>{item.avatar}</span>
-            )
+                <span className={styles.iconElement}>{item.avatar}</span>
+              )
           ) : null;
 
           return (
@@ -80,7 +80,8 @@ const NoticeList: React.SFC<NoticeIconTabProps> = ({
                 }
                 description={
                   <div>
-                    <div className={styles.description}>{item.description}</div>
+                    {/* <div className={styles.description}>{item.description}</div> */}
+                    {/* <div className={styles.description} dangerouslySetInnerHTML={{ __html: item.content || '' }}></div> */}
                     <div className={styles.datetime}>{item.datetime}</div>
                   </div>
                 }

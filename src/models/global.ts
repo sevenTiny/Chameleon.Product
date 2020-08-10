@@ -101,6 +101,7 @@ const unreadListFormatter = (response: any) => {
       id: item['_id'].value,
       avatar: '',
       title: item['MessageTitle'].text,
+      content: item['MessageContent'].text,
       description: item['MessageContent'].text,
       datetime: item['SendTime'].value,
       // extra: item['MessageContent'].value,
