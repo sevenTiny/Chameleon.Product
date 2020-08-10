@@ -3,7 +3,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { Link, SelectLang, useIntl, ConnectProps, connect } from 'umi';
 import React from 'react';
 import { ConnectState } from '@/models/connect';
-import logo from '../assets/logo.svg';
+import logo from '../../public/favicon.png';
 import styles from './UserLayout.less';
 
 export interface UserLayoutProps extends Partial<ConnectProps> {

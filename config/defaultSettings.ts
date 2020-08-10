@@ -19,7 +19,7 @@ const proSettings: DefaultSettings = {
   menu: {
     locale: false,//国际化：true=开启，false=关闭
   },
-  title: 'Ant Design Pro',
+  title: 'Chameleon',
   pwa: false,
   iconfontUrl: '',
 };
