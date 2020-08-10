@@ -4,6 +4,7 @@ import defaultSettings from './defaultSettings';
 import proxy from './proxy';
 const { REACT_APP_ENV } = process.env;
 export default defineConfig({
+  history: { type: 'hash' }, // 默认是 browser
   hash: true,
   antd: {},
   dva: {
