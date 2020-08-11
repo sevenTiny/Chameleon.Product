@@ -3,14 +3,12 @@ import { Avatar, Menu, Spin } from 'antd';
 import React from 'react';
 import { history, ConnectProps, connect } from 'umi';
 import { ConnectState } from '@/models/connect';
-import { CurrentUser } from '@/models/user';
 import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
 import { ChameleonGlobal } from '@/models/global';
 import defaultSettings from '../../../config/defaultSettings';
 
 export interface GlobalHeaderRightProps extends Partial<ConnectProps> {
-  currentUser?: CurrentUser;
   menu?: boolean;
   chameleonGlobal: ChameleonGlobal;
 }
@@ -29,7 +27,7 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
 
       if (dispatch) {
         dispatch({
-          type: 'login/logout',
+          type: 'account/logout',
         });
       }
 
@@ -40,14 +38,13 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
   };
 
   render(): React.ReactNode {
-    const { currentUser = {}, menu } = this.props;
-
-    //赋值头像喝姓名
-    currentUser.avatar =
-      defaultSettings.dataApiHost +
+    const { menu } = this.props;
+    //头像
+    const avator = defaultSettings.dataApiHost +
       '/api/File?_interface=ChameleonSystem.FDS.AccountAvatarDownload&_fileId=' +
       this.props.chameleonGlobal.avatarPicId;
-    currentUser.name = this.props.chameleonGlobal.userEmail;
+
+    const userName = this.props.chameleonGlobal.userEmail;
 
     const menuHeaderDropdown = (
       <Menu className={styles.menu} selectedKeys={[]} onClick={this.onMenuClick}>
@@ -71,28 +68,27 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
         </Menu.Item>
       </Menu>
     );
-    return currentUser && currentUser.name ? (
+    return userName ? (
       <HeaderDropdown overlay={menuHeaderDropdown}>
         <span className={`${styles.action} ${styles.account}`}>
-          <Avatar size="small" className={styles.avatar} src={currentUser.avatar} alt="avatar" />
-          <span className={`${styles.name} anticon`}>{currentUser.name}</span>
+          <Avatar size="small" className={styles.avatar} src={avator} alt="avatar" />
+          <span className={`${styles.name} anticon`}>{userName}</span>
         </span>
       </HeaderDropdown>
     ) : (
-      <span className={`${styles.action} ${styles.account}`}>
-        <Spin
-          size="small"
-          style={{
-            marginLeft: 8,
-            marginRight: 8,
-          }}
-        />
-      </span>
-    );
+        <span className={`${styles.action} ${styles.account}`}>
+          <Spin
+            size="small"
+            style={{
+              marginLeft: 8,
+              marginRight: 8,
+            }}
+          />
+        </span>
+      );
   }
 }
 
-export default connect(({ user, global }: ConnectState) => ({
-  currentUser: user.currentUser,
+export default connect(({ global }: ConnectState) => ({
   chameleonGlobal: global !== undefined ? global.chameleonGlobal : undefined,
 }))(AvatarDropdown);

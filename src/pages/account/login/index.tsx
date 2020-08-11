@@ -2,10 +2,9 @@ import { AlipayCircleOutlined, TaobaoCircleOutlined, WeiboCircleOutlined } from 
 import { Alert, Checkbox } from 'antd';
 import React, { useState } from 'react';
 import { Dispatch, Link, connect } from 'umi';
-import { StateType } from './model';
+import { StateType, LoginParamsType } from '@/models/account';
 import styles from './style.less';
-import { LoginParamsType } from './service';
-import LoginFrom from './components/Login';
+import LoginFrom from './Login';
 
 const { Tab, UserName, Password, Mobile, Captcha, Submit } = LoginFrom;
 interface LoginProps {

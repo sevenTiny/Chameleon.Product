@@ -30,30 +30,30 @@ export default defineConfig({
       component: '../layouts/BlankLayout',
       routes: [
         {
-          path: '/user',
+          path: '/account',
           component: '../layouts/UserLayout',
           routes: [
             {
-              path: '/user',
-              redirect: '/user/login',
+              path: '/account',
+              redirect: '/account/login',
             },
             {
               name: 'login',
               icon: 'smile',
-              path: '/user/login',
-              component: './user/login',
+              path: '/account/login',
+              component: './account/login',
             },
             {
               name: 'register-result',
               icon: 'smile',
-              path: '/user/register-result',
-              component: './user/register-result',
+              path: '/account/register-result',
+              component: './account/register-result',
             },
             {
               name: 'register',
               icon: 'smile',
-              path: '/user/register',
-              component: './user/register',
+              path: '/account/register',
+              component: './account/register',
             },
             {
               component: '404',

@@ -1,26 +1,15 @@
-import { Effect, history, Reducer } from 'umi';
+import { stringify } from 'querystring';
+import { history, Reducer, Effect } from 'umi';
+import { fakeAccountLogin } from '@/services/login';
+import { setAuthority } from '@/utils/authority';
+import { getPageQuery } from '@/utils/utils';
 import { message } from 'antd';
-import { parse } from 'qs';
-import { fakeAccountLogin, getFakeCaptcha } from './service';
 
-export function getPageQuery() {
-  return parse(window.location.href.split('?')[1]);
-}
-
-export function setAuthority(authority: string | string[]) {
-  const proAuthority = typeof authority === 'string' ? [authority] : authority;
-  localStorage.setItem('antd-pro-authority', JSON.stringify(proAuthority));
-  // hard code
-  // reload Authorized component
-  try {
-    if ((window as any).reloadAuthorized) {
-      (window as any).reloadAuthorized();
-    }
-  } catch (error) {
-    // do not need do anything
-  }
-
-  return authority;
+export interface LoginParamsType {
+  userName: string;
+  password: string;
+  mobile: string;
+  captcha: string;
 }
 
 export interface StateType {
@@ -34,7 +23,7 @@ export interface ModelType {
   state: StateType;
   effects: {
     login: Effect;
-    getCaptcha: Effect;
+    logout: Effect;
   };
   reducers: {
     changeLoginStatus: Reducer<StateType>;
@@ -42,7 +31,7 @@ export interface ModelType {
 }
 
 const Model: ModelType = {
-  namespace: 'userAndlogin',
+  namespace: 'account',
 
   state: {
     status: undefined,
@@ -69,7 +58,7 @@ const Model: ModelType = {
               redirect = redirect.substr(redirect.indexOf('#') + 1);
             }
           } else {
-            window.location.href = redirect;
+            window.location.href = '/';
             return;
           }
         }
@@ -77,8 +66,17 @@ const Model: ModelType = {
       }
     },
 
-    *getCaptcha({ payload }, { call }) {
-      yield call(getFakeCaptcha, payload);
+    logout() {
+      const { redirect } = getPageQuery();
+      // Note: There may be security issues, please note
+      if (window.location.pathname !== '/account/login' && !redirect) {
+        history.replace({
+          pathname: '/account/login',
+          search: stringify({
+            redirect: window.location.href,
+          }),
+        });
+      }
     },
   },
 

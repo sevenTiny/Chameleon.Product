@@ -4,14 +4,12 @@ import { Tag, message } from 'antd';
 import groupBy from 'lodash/groupBy';
 import moment from 'moment';
 import { ChameleonNotice } from '@/models/global';
-import { CurrentUser } from '@/models/user';
 import { ConnectState } from '@/models/connect';
 import NoticeIcon, { NoticeIconData } from '../NoticeIcon';
 import styles from './index.less';
 
 export interface GlobalHeaderRightProps extends Partial<ConnectProps> {
   chameleonNotice?: ChameleonNotice;
-  currentUser?: CurrentUser;
   fetchingNotices?: boolean;
   onNoticeVisibleChange?: (visible: boolean) => void;
   onNoticeClear?: (tabName?: string) => void;
@@ -108,8 +106,7 @@ class GlobalHeaderRight extends Component<GlobalHeaderRightProps> {
   }
 }
 
-export default connect(({ user, global, loading }: ConnectState) => ({
-  currentUser: user.currentUser,
+export default connect(({ global, loading }: ConnectState) => ({
   collapsed: global.collapsed,
   fetchingMoreNotices: loading.effects['global/fetchMoreNotices'],
   fetchingNotices: loading.effects['global/fetchNotices'],
