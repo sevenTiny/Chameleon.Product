@@ -32,37 +32,40 @@ const Login: React.FC<LoginProps> = (props) => {
   const [autoLogin, setAutoLogin] = useState(true);
   const [type, setType] = useState<string>('account');
 
+  // login
   const handleSubmit = (values: LoginParamsType) => {
     const { dispatch } = props;
     dispatch({
-      type: 'userAndlogin/login',
+      type: 'account/login',
       payload: {
         ...values,
         type,
       },
     });
   };
+
   return (
     <div className={styles.main}>
       <LoginFrom activeKey={type} onTabChange={setType} onSubmit={handleSubmit}>
         <Tab key="account" tab="账户密码登录">
           {status === 'error' && loginType === 'account' && !submitting && (
-            <LoginMessage content="账户或密码错误（admin/ant.design）" />
+            <LoginMessage content="账户或密码错误" />
           )}
 
           <UserName
-            name="userName"
-            placeholder="用户名: admin or user"
+            name="email"
+            placeholder="邮箱"
             rules={[
               {
                 required: true,
-                message: '请输入用户名!',
+                type: 'email',
+                message: '请输入用户邮箱!',
               },
             ]}
           />
           <Password
             name="password"
-            placeholder="密码: ant.design"
+            placeholder="密码"
             rules={[
               {
                 required: true,
@@ -71,7 +74,7 @@ const Login: React.FC<LoginProps> = (props) => {
             ]}
           />
         </Tab>
-        <Tab key="mobile" tab="手机号登录">
+        {/* <Tab key="mobile" tab="手机号登录">
           {status === 'error' && loginType === 'mobile' && !submitting && (
             <LoginMessage content="验证码错误" />
           )}
@@ -102,7 +105,7 @@ const Login: React.FC<LoginProps> = (props) => {
               },
             ]}
           />
-        </Tab>
+        </Tab> */}
         <div>
           <Checkbox checked={autoLogin} onChange={(e) => setAutoLogin(e.target.checked)}>
             自动登录
@@ -116,7 +119,7 @@ const Login: React.FC<LoginProps> = (props) => {
           </a>
         </div>
         <Submit loading={submitting}>登录</Submit>
-        <div className={styles.other}>
+        {/* <div className={styles.other}>
           其他登录方式
           <AlipayCircleOutlined className={styles.icon} />
           <TaobaoCircleOutlined className={styles.icon} />
@@ -124,7 +127,7 @@ const Login: React.FC<LoginProps> = (props) => {
           <Link className={styles.register} to="/user/register">
             注册账户
           </Link>
-        </div>
+        </div> */}
       </LoginFrom>
     </div>
   );
@@ -143,6 +146,6 @@ export default connect(
     };
   }) => ({
     userAndlogin,
-    submitting: loading.effects['userAndlogin/login'],
+    submitting: loading.effects['account/login'],
   }),
 )(Login);

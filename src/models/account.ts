@@ -1,9 +1,9 @@
 import { stringify } from 'querystring';
 import { history, Reducer, Effect } from 'umi';
-import { fakeAccountLogin } from '@/services/login';
-import { setAuthority } from '@/utils/authority';
 import { getPageQuery } from '@/utils/utils';
 import { message } from 'antd';
+import { dataApiRequest, accountRequest } from '@/utils/request';
+import cookie from 'react-cookies'
 
 export interface LoginParamsType {
   userName: string;
@@ -15,7 +15,6 @@ export interface LoginParamsType {
 export interface StateType {
   status?: 'ok' | 'error';
   type?: string;
-  currentAuthority?: 'user' | 'guest' | 'admin';
 }
 
 export interface ModelType {
@@ -39,14 +38,27 @@ const Model: ModelType = {
 
   effects: {
     *login({ payload }, { call, put }) {
-      const response = yield call(fakeAccountLogin, payload);
-      yield put({
-        type: 'changeLoginStatus',
-        payload: response,
-      });
-      // Login successfully
-      if (response.status === 'ok') {
+      const response = yield accountRequest('/UserAccount/SignInThirdParty',
+        {
+          method: 'POST',
+          data: {
+            'email': payload.email,
+            'password': payload.password,
+          }
+        });
+
+      if (response && response.isSuccess) {
         message.success('登录成功！');
+        cookie.save('_AccessToken', response.data.accessToken, {});
+
+        yield put({
+          type: 'changeLoginStatus',
+          payload: {
+            status: 'ok',
+            type: ''
+          },
+        });
+
         const urlParams = new URL(window.location.href);
         const params = getPageQuery();
         let { redirect } = params as { redirect: string };
@@ -67,6 +79,8 @@ const Model: ModelType = {
     },
 
     logout() {
+      cookie.remove('_AccessToken');
+
       const { redirect } = getPageQuery();
       // Note: There may be security issues, please note
       if (window.location.pathname !== '/account/login' && !redirect) {
@@ -82,7 +96,6 @@ const Model: ModelType = {
 
   reducers: {
     changeLoginStatus(state, { payload }) {
-      setAuthority(payload.currentAuthority);
       return {
         ...state,
         status: payload.status,

@@ -1,7 +1,7 @@
 import { Subscription, Reducer, Effect } from 'umi';
 import { NoticeIconData } from '@/components/NoticeIcon';
 import { ConnectState } from './connect.d';
-import request from '@/utils/request';
+import { dataApiRequest } from '@/utils/request';
 import { MenuDataItem } from '@ant-design/pro-layout';
 
 // 通知
@@ -151,15 +151,15 @@ const GlobalModel: GlobalModelType = {
   effects: {
     *fetchNotices(_, { call, put, select }) {
       //未删除&未读消息总数
-      const unreadMsgCount = yield request(
+      const unreadMsgCount = yield dataApiRequest(
         '/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageCount',
       );
       //未删除消息总数
-      const undeletedMsgCount = yield request(
+      const undeletedMsgCount = yield dataApiRequest(
         '/api/CloudData?_interface=ChameleonSystem.MessageAlert.UnDeletedCount',
       );
       //未读消息列表
-      const unreadListData = yield request(
+      const unreadListData = yield dataApiRequest(
         '/api/CloudData?_interface=ChameleonSystem.MessageAlert.CurrentUserUnReadMessageList',
       );
 
@@ -226,7 +226,7 @@ const GlobalModel: GlobalModelType = {
           },
         });
       } else {
-        const response = yield request('/System/ChameleonSystemInfo');
+        const response = yield dataApiRequest('/System/ChameleonSystemInfo');
         const data = response.data;
         yield put({
           type: 'saveChameleonGlobal',

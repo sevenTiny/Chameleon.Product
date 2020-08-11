@@ -98,8 +98,8 @@ const Login: LoginType = (props) => {
               {otherChildren}
             </React.Fragment>
           ) : (
-            props.children
-          )}
+              props.children
+            )}
         </Form>
       </div>
     </LoginContext.Provider>

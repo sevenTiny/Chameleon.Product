@@ -47,18 +47,33 @@ const errorHandler = (error: { response: Response }): Response => {
   return response;
 };
 
+// 响应处理程序
+const responseHandler = async (response: Response) => {
+  if (response && response.status == 200) {
+    const data = await response.clone().json();
+    if (data && data.success) {
+      console.log(data);
+    }
+    //这里根据code判断异常类型，决定是否重新登陆
+    // 跳转至至指定500页面
+    // history.push('/500');
+  }
+  return response
+}
+
 /**
  * 配置request请求时的默认参数
  * request使用参考：https://zhuanlan.zhihu.com/p/88997003
  */
-const request = extend({
+
+const dataApiRequest = extend({
   errorHandler, // 默认错误处理
   prefix: defaultSettings.dataApiHost,
   // credentials: 'include', // 默认请求是否带上cookie
 });
 
 // request拦截器
-request.interceptors.request.use((url, options) => {
+dataApiRequest.interceptors.request.use((url, options) => {
   //获取cookie中的token（登陆时写入）
   const token = cookie.load('_AccessToken');
   return (
@@ -74,19 +89,14 @@ request.interceptors.request.use((url, options) => {
 });
 
 // response拦截器, 处理response
-request.interceptors.response.use(async (response) => {
+dataApiRequest.interceptors.response.use(responseHandler);
 
-  if (response && response.status == 200) {
-    const data = await response.clone().json();
-    if (data && data.success) {
-      console.log(data);
-    }
-    //这里根据code判断异常类型，决定是否重新登陆
-    // 跳转至至指定500页面
-    // history.push('/500');
-  }
-  return response
+const accountRequest = extend({
+  errorHandler, // 默认错误处理
+  prefix: defaultSettings.accountApiHost,
 });
 
+// response拦截器, 处理response
+accountRequest.interceptors.response.use(responseHandler);
 
-export default request;
+export { dataApiRequest, accountRequest };

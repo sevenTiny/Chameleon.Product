@@ -14,7 +14,6 @@ import React, { useEffect } from 'react';
 import { Link, useIntl, connect, Dispatch, history } from 'umi';
 import { GithubOutlined } from '@ant-design/icons';
 import { Result, Button } from 'antd';
-import Authorized from '@/utils/Authorized';
 import RightContent from '@/components/GlobalHeader/RightContent';
 import { ConnectState } from '@/models/connect';
 import { getAuthorityFromRouter } from '@/utils/utils';
@@ -28,7 +27,7 @@ const noMatch = (
     subTitle="Sorry, you are not authorized to access this page."
     extra={
       <Button type="primary">
-        <Link to="/user/login">Go Login</Link>
+        <Link to="/account/login">Go Login</Link>
       </Button>
     }
   />
@@ -49,17 +48,6 @@ export type BasicLayoutContext = { [K in 'location']: BasicLayoutProps[K] } & {
     [path: string]: MenuDataItem;
   };
 };
-/**
- * use Authorized check all menu item
- */
-// const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] =>
-//   menuList.map((item) => {
-//     const localItem = {
-//       ...item,
-//       children: item.children ? menuDataRender(item.children) : undefined,
-//     };
-//     return Authorized.check(item.authority, localItem, null) as MenuDataItem;
-//   });
 
 const defaultFooterDom = (
   <DefaultFooter
@@ -165,9 +153,9 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         {...props}
         {...settings}
       >
-        <Authorized authority={authorized!.authority} noMatch={noMatch}>
+        {/* <Authorized authority={authorized!.authority} noMatch={noMatch}>
           {children}
-        </Authorized>
+        </Authorized> */}
       </ProLayout>
       <SettingDrawer
         settings={settings}
