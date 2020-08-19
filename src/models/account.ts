@@ -2,7 +2,7 @@ import { stringify } from 'querystring';
 import { history, Reducer, Effect } from 'umi';
 import { getPageQuery } from '@/utils/utils';
 import { message } from 'antd';
-import { dataApiRequest, accountRequest } from '@/utils/request';
+import dataApiRequest from '@/utils/request';
 import cookie from 'react-cookies'
 
 export interface LoginParamsType {
@@ -38,7 +38,7 @@ const Model: ModelType = {
 
   effects: {
     *login({ payload }, { call, put }) {
-      const response = yield accountRequest('/UserAccount/SignInThirdParty',
+      const response = yield dataApiRequest('/api/UserAccount/SignInThirdParty',
         {
           method: 'POST',
           data: {
@@ -47,7 +47,7 @@ const Model: ModelType = {
           }
         });
 
-      if (response && response.isSuccess) {
+      if (response && response.success) {
         message.success('登录成功！');
         cookie.save('_AccessToken', response.data.accessToken, {});
 
@@ -78,7 +78,7 @@ const Model: ModelType = {
       }
     },
 
-    logout() {
+    *logout() {
       cookie.remove('_AccessToken');
 
       const { redirect } = getPageQuery();

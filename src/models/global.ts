@@ -1,7 +1,7 @@
 import { Subscription, Reducer, Effect } from 'umi';
 import { NoticeIconData } from '@/components/NoticeIcon';
 import { ConnectState } from './connect.d';
-import { dataApiRequest } from '@/utils/request';
+import dataApiRequest from '@/utils/request';
 import { MenuDataItem } from '@ant-design/pro-layout';
 
 // 通知
@@ -226,7 +226,7 @@ const GlobalModel: GlobalModelType = {
           },
         });
       } else {
-        const response = yield dataApiRequest('/System/ChameleonSystemInfo');
+        const response = yield dataApiRequest('/api/UserAccount/ChameleonSystemInfo');
         const data = response.data;
         yield put({
           type: 'saveChameleonGlobal',

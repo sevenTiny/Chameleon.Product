@@ -7,6 +7,7 @@ import HeaderDropdown from '../HeaderDropdown';
 import styles from './index.less';
 import { ChameleonGlobal } from '@/models/global';
 import defaultSettings from '../../../config/defaultSettings';
+import { getAccessTokenParam } from '../../utils/utils';
 
 export interface GlobalHeaderRightProps extends Partial<ConnectProps> {
   menu?: boolean;
@@ -42,7 +43,7 @@ class AvatarDropdown extends React.Component<GlobalHeaderRightProps> {
     //头像
     const avator = defaultSettings.dataApiHost +
       '/api/File?_interface=ChameleonSystem.FDS.AccountAvatarDownload&_fileId=' +
-      this.props.chameleonGlobal.avatarPicId;
+      this.props.chameleonGlobal.avatarPicId + '&' + getAccessTokenParam();
 
     const userName = this.props.chameleonGlobal.userEmail;
 

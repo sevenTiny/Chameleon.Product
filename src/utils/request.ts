@@ -5,7 +5,8 @@
 import { extend } from 'umi-request';
 import { notification } from 'antd';
 import defaultSettings from '../../config/defaultSettings';
-import cookie from 'react-cookies'
+import cookie from 'react-cookies';
+import { history } from 'umi';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -34,10 +35,15 @@ const errorHandler = (error: { response: Response }): Response => {
     const errorText = codeMessage[response.status] || response.statusText;
     const { status, url } = response;
 
-    notification.error({
-      message: `请求错误 ${status}: ${url}`,
-      description: errorText,
-    });
+    if (status == 401) {
+      // 跳转至至指定登陆页面
+      history.push('/account/login');
+    } else {
+      notification.error({
+        message: `请求错误 ${status}: ${url}`,
+        description: errorText,
+      });
+    }
   } else if (!response) {
     notification.error({
       description: '您的网络发生异常，无法连接服务器',
@@ -46,20 +52,6 @@ const errorHandler = (error: { response: Response }): Response => {
   }
   return response;
 };
-
-// 响应处理程序
-const responseHandler = async (response: Response) => {
-  if (response && response.status == 200) {
-    const data = await response.clone().json();
-    if (data && data.success) {
-      console.log(data);
-    }
-    //这里根据code判断异常类型，决定是否重新登陆
-    // 跳转至至指定500页面
-    // history.push('/500');
-  }
-  return response
-}
 
 /**
  * 配置request请求时的默认参数
@@ -89,14 +81,21 @@ dataApiRequest.interceptors.request.use((url, options) => {
 });
 
 // response拦截器, 处理response
-dataApiRequest.interceptors.response.use(responseHandler);
+dataApiRequest.interceptors.response.use(async (response: Response) => {
+  if (response) {
+    if (response && response.status == 200) {
+      const data = await response.clone().json();
+      if (data && data.success) {
+        console.log(data);
+      }
+      //这里根据code判断异常类型，决定是否重新登陆
+    } else if (response.status == 401) {
+      // 跳转至至指定登陆页面
+      history.push('/account/login');
+    }
+  }
 
-const accountRequest = extend({
-  errorHandler, // 默认错误处理
-  prefix: defaultSettings.accountApiHost,
+  return response
 });
 
-// response拦截器, 处理response
-accountRequest.interceptors.response.use(responseHandler);
-
-export { dataApiRequest, accountRequest };
+export default dataApiRequest;
