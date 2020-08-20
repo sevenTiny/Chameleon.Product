@@ -67,6 +67,19 @@ export default defineConfig({
           authority: ['admin', 'user'],
           routes: [
             {
+              path:'/bookmanagement',
+              icon: 'table',
+              name: 'list',
+              routes: [
+                {
+                  name: 'tablelist',
+                  icon: 'smile',
+                  path: '/bookmanagement/tablelist',
+                  component: './bookmanagement/tablelist',
+                },
+              ],
+            },
+            {
               path: '/',
               redirect: '/dashboard/analysis',
             },
